@@ -24,7 +24,7 @@ def main():
     st.title("Title-Based Image Picker")
 
     # Load data
-    file_path = r"C:\Users\v-jiqingsang\Desktop\clipcap\data_clean\Bmq_infer_test.tsv"
+    file_path = "Bmq_infer_test.tsv"
     data = load_data(file_path)
 
     # Get unique titles
