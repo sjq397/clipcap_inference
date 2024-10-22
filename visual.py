@@ -4,7 +4,7 @@ import pandas as pd
 # Load the TSV file
 @st.cache_data
 def load_data(file_path):
-    data = pd.read_csv(file_path, sep='\t', header=0)
+    data = pd.read_csv(file_path, sep='\t', header=0).drop_duplicates()
     data['Position'] = range(1, len(data) + 1)
     
     return data
@@ -24,8 +24,9 @@ def main():
     st.title("Title-Based Image Picker")
 
     # Load data
-    file_path = "Bmq_infer_test.tsv"
+    file_path = "infer_Image_embedding_chaojie.tsv"
     data = load_data(file_path)
+    print(data.columns)
 
     # Get unique titles
     titles = data['MMAltTextWords'].unique()
@@ -46,8 +47,8 @@ def main():
             with cols[(row['Position'] - 1) % 5]:
                 st.image(row['MUrl'], width=150, caption=truncate_text(row['MMAltTextWords']), use_column_width=True)
                 st.write(f"Title: {row['MMAltTextWords']}")
-                st.write(f"Bmq: {row['Bmq']}")
-                st.write(f"Bmq_Infer: {row['Bmq_Predict']}")
+                # st.write(f"Bmq: {row['Bmq']}")
+                st.write(f"Bmq_Infer: {row['Bmq_infer']}")
                 st.write(" ")
                 st.write(" ")
 
