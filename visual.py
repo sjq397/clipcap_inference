@@ -24,7 +24,7 @@ def main():
     st.title("Title-Based Image Picker")
 
     # Load data
-    file_path = "infer_Image_embedding_chaojie.tsv"
+    file_path = "tmp_Bmq_infer_test (3).tsv"
     data = load_data(file_path)
     print(data.columns)
 
@@ -47,8 +47,9 @@ def main():
             with cols[(row['Position'] - 1) % 5]:
                 st.image(row['MUrl'], width=150, caption=truncate_text(row['MMAltTextWords']), use_column_width=True)
                 st.write(f"Title: {row['MMAltTextWords']}")
-                # st.write(f"Bmq: {row['Bmq']}")
-                st.write(f"Bmq_Infer: {row['Bmq_infer']}")
+                st.write(f"Bmq_Infer_100k: {row['Bmq_infer_v2']}")
+                st.write(f"Bmq_Infer_2000k: {row['Bmq_infer_v1']}")
+                st.write(f"Bmq_Infer_100k_with_title: {row['Bmq_infer_v3']}")
                 st.write(" ")
                 st.write(" ")
 
