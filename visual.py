@@ -24,7 +24,7 @@ def main():
     st.title("Title-Based Image Picker")
 
     # Load data
-    file_path = r"C:\Users\v-jiqingsang\Downloads\Bmq_infer_test (1).tsv"
+    file_path = r"Bmq_infer_test (1).tsv"
     data = load_data(file_path)
     print(data.columns)
 
