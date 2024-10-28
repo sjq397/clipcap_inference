@@ -24,7 +24,7 @@ def main():
     st.title("Title-Based Image Picker")
 
     # Load data
-    file_path = r"Bmq_infer_test (1).tsv"
+    file_path = "infer_test_eval_data (1).tsv"
     data = load_data(file_path)
     print(data.columns)
 
@@ -48,8 +48,9 @@ def main():
                 st.image(row['MUrl'], width=150, caption=truncate_text(row['MMAltTextWords']), use_column_width=True)
                 st.write(f"Title: {row['MMAltTextWords']}")
                 st.write(f"Bmq: {row['Bmq']}")
-                st.write(f"Bmq_Infer_2m: {row['Bmq_Predict']}")
-                st.write(f"Bmq_Infer_10k_with_title: {row['Bmq_Predict_test_10k']}")
+                st.write(f"Bmq_Infer_v1: {row['Bmq_infer']}")
+                st.write(f"Bmq_Infer_title_jq: {row['Bmq_Predict_title_V2_jq']}")
+                st.write(f"Bmq_Infer_title_zt: {row['Bmq_Predict_title_V2_zt']}")
                 st.write(" ")
                 st.write(" ")
 
