@@ -144,7 +144,7 @@ def main():
     if user_input:
         st.session_state['user_id'] = user_input  # 更新用户 ID
 
-    uploaded_file = "icongoldenset.tsv"
+    uploaded_file = "icon_goldenset.tsv"
     if uploaded_file is not None:
         df = load_data(uploaded_file)
         
