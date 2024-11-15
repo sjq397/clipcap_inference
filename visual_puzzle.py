@@ -99,30 +99,30 @@ def display_images_with_comments(df, label, start_idx, end_idx):
                     if image:
                         st.image(image, caption=row['MUrl'], use_container_width=True)
                     else:
-                        st.write(f"无法加载图片: {row['MUrl']} , 跳过此图片。")
+                        st.write(f"Unable to load image: {row['MUrl']} , skip this image.")
                     
                     key = row['Mkey']
-                    comment_key = f"comment_{key}"
-                    # 从数据库读取所有评论
-                    current_comments = get_comments(key)
+                    comment_key = f"comment_{key}_{st.session_state['user_id']}_{int(time.time())}"  # 唯一 key
                     
-                    # 显示所有评论
-                    for user_id, comment in current_comments:
-                        st.write(f"{user_id}: {comment}")
+                    # 从数据库读取已有评论
+                    current_comment = get_comment(key)
                     
-                    # 获取当前用户输入的评论
-                    user_id = st.session_state.get('user_id', 'guest')  # 获取用户ID，默认是 'guest'
-                    comment = st.text_input(f"添加评论 (Mkey: {row['Mkey']}):", 
-                                            value=st.session_state.get(comment_key, ""), 
-                                            key=f"input_{row['Mkey']}")  # 使用唯一的key
+                    # 在 session_state 中保存评论状态
+                    if comment_key not in st.session_state:
+                        st.session_state[comment_key] = current_comment
+                    
+                    # 获取用户输入的评论
+                    comment = st.text_input(f"comment (Mkey: {row['Mkey']}):", 
+                                            value=st.session_state[comment_key], 
+                                            key=comment_key)  # 使用唯一的 key
                     
                     # 如果评论有变化，更新 session_state 和数据库
-                    if comment != st.session_state.get(comment_key, ""):
+                    if comment != st.session_state[comment_key]:
                         st.session_state[comment_key] = comment
-                        save_comment(key, user_id, label, comment)  # 将评论保存到数据库
+                        save_comment(key, label, comment)  # 将评论保存到数据库
 
                     if comment:
-                        st.write(f"您的评论: {comment}")
+                        st.write(f"comment: {comment}")
 
 
 
