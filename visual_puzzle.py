@@ -45,7 +45,7 @@ def save_comment(mkey, user_id, label, comment):
         conn.commit()
         conn.close()
     except Exception as e:
-        st.error(f"保存评论时出现错误: {e}")
+        st.error(f"Error: {e}")
         print(f"Error in save_comment: {e}")
 
 
@@ -99,7 +99,7 @@ def display_images_with_comments(df, label, start_idx, end_idx):
                     if image:
                         st.image(image, caption=row['MUrl'], use_container_width=True)
                     else:
-                        st.write(f"无法加载图片: {row['MUrl']} , 跳过此图片。")
+                        st.write(f"：Images cannot be loaded: {row['MUrl']} , 跳过此图片。")
                     
                     key = row['Mkey']
                     comment_key = f"comment_{key}"
@@ -112,7 +112,7 @@ def display_images_with_comments(df, label, start_idx, end_idx):
                     
                     # 获取当前用户输入的评论
                     user_id = st.session_state.get('user_id', 'guest')  # 获取用户ID，默认是 'guest'
-                    comment = st.text_input(f"添加评论 (Mkey: {row['Mkey']}):", 
+                    comment = st.text_input(f"Add Comments (Mkey: {row['Mkey']}):", 
                                             value=st.session_state.get(comment_key, ""), 
                                             key=f"input_{row['Mkey']}")  # 使用唯一的key
                     
@@ -122,7 +122,7 @@ def display_images_with_comments(df, label, start_idx, end_idx):
                         save_comment(key, user_id, label, comment)  # 将评论保存到数据库
 
                     if comment:
-                        st.write(f"您的评论: {comment}")
+                        st.write(f"Your comments: {comment}")
 
 
 
@@ -135,7 +135,7 @@ def main():
 
     # 提供一个输入框让用户设置自己的 ID，使用会话状态中的 user_id 来存储
     user_input = st.text_input(
-        "请输入您的用户 ID", 
+        "Please enter your user_ID", 
         value=st.session_state['user_id'],  # 通过 session_state 保持输入值
         key="user_id_input"  # 固定 key
     )
