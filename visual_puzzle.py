@@ -133,13 +133,14 @@ def main():
     if 'user_id' not in st.session_state:
         st.session_state['user_id'] = 'guest'  # 默认用户 ID 为 'guest'
 
-    # 提供一个输入框让用户设置自己的 ID，使用时间戳来保证唯一性
+    # 提供一个输入框让用户设置自己的 ID，使用会话状态中的 user_id 来存储
     user_input = st.text_input(
         "请输入您的用户 ID", 
-        value=st.session_state['user_id'], 
-        key=f"user_id_input_{int(time.time())}"  # 使用时间戳确保唯一
+        value=st.session_state['user_id'],  # 通过 session_state 保持输入值
+        key="user_id_input"  # 固定 key
     )
     
+    # 更新会话状态中的用户 ID
     if user_input:
         st.session_state['user_id'] = user_input  # 更新用户 ID
 
