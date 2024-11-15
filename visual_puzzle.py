@@ -99,34 +99,32 @@ def display_images_with_comments(df, label, start_idx, end_idx):
                     if image:
                         st.image(image, caption=row['MUrl'], use_container_width=True)
                     else:
-                        st.write(f"Unable to load image: {row['MUrl']} , skip this image.")
+                        st.write(f"无法加载图片: {row['MUrl']} , 跳过此图片。")
                     
                     key = row['Mkey']
-                    comment_key = f"comment_{key}_{st.session_state['user_id']}_{int(time.time())}"  # 唯一 key
+                    comment_key = f"comment_{key}"
+                    # 从数据库读取所有评论
+                    current_comments = get_comments(key)
                     
-                    # 从数据库读取已有评论
-                    current_comment = get_comments(key)
+                    # 显示所有评论
+                    for user_id, comment in current_comments:
+                        st.write(f"{user_id}: {comment}")
                     
-                    # 在 session_state 中保存评论状态
-                    if comment_key not in st.session_state:
-                        st.session_state[comment_key] = current_comment
-                    
-                    # 获取用户输入的评论
-                    comment = st.text_input(f"comment (Mkey: {row['Mkey']}):", 
-                                            value=st.session_state[comment_key], 
-                                            key=comment_key)  # 使用唯一的 key
+                    # 获取当前用户输入的评论
+                    user_id = st.session_state.get('user_id', 'guest')  # 获取用户ID，默认是 'guest'
+                    comment = st.text_input(f"添加评论 (Mkey: {row['Mkey']}):", 
+                                            value=st.session_state.get(comment_key, ""), 
+                                            key=f"input_{row['Mkey']}")  # 使用唯一的key
                     
                     # 如果评论有变化，更新 session_state 和数据库
-                    if comment != st.session_state[comment_key]:
+                    if comment != st.session_state.get(comment_key, ""):
                         st.session_state[comment_key] = comment
-                        save_comment(key, label, comment)  # 将评论保存到数据库
+                        save_comment(key, user_id, label, comment)  # 将评论保存到数据库
 
                     if comment:
-                        st.write(f"comment: {comment}")
+                        st.write(f"您的评论: {comment}")
 
 
-
-import time
 
 def main():
     st.title('Puzzle—Image')
@@ -135,15 +133,11 @@ def main():
     if 'user_id' not in st.session_state:
         st.session_state['user_id'] = 'guest'  # 默认用户 ID 为 'guest'
 
-    # 使用当前时间（到秒）生成唯一的输入框 key
-    timestamp = int(time.time())  # 获取当前时间戳（到秒）
-    user_id_key = f"user_id_input_{st.session_state['user_id']}_{timestamp}"  # 时间戳后缀确保唯一
-
-    # 提供一个输入框让用户设置自己的 ID
+    # 提供一个输入框让用户设置自己的 ID，使用会话状态中的 user_id 来存储
     user_input = st.text_input(
         "请输入您的用户 ID", 
-        value=st.session_state['user_id'],  # 使用会话状态中的值
-        key=user_id_key  # 为每个输入框生成唯一的 key
+        value=st.session_state['user_id'],  # 通过 session_state 保持输入值
+        key="user_id_input"  # 固定 key
     )
     
     # 更新会话状态中的用户 ID
@@ -160,9 +154,7 @@ def main():
         if 'page_num' not in st.session_state:
             st.session_state['page_num'] = 1
         
-        # 给每个 selectbox 元素添加唯一的 key
-        page_num_key = f"page_num_selectbox_{st.session_state['user_id']}_{timestamp}"  # 为页面选择框创建唯一 key
-        label = st.selectbox('Label', ['1', '0', 'uncertain'], key=page_num_key)
+        label = st.selectbox('Label', ['1', '0', 'uncertain'])
 
         page_size = 20
         page_num = st.session_state['page_num'] 
@@ -189,7 +181,3 @@ if __name__ == '__main__':
     main()
 
 
-
-
-if __name__ == '__main__':
-    main()
