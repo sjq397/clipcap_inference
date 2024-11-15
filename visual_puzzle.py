@@ -114,8 +114,8 @@ def display_images_with_comments(df, label, start_idx, end_idx):
                     user_id = st.session_state.get('user_id', 'guest')  # 获取用户ID，默认是 'guest'
                     comment = st.text_input(f"添加评论 (Mkey: {row['Mkey']}):", 
                                             value=st.session_state.get(comment_key, ""), 
-                                            key=f"input_{row['Mkey']}")
-
+                                            key=f"input_{row['Mkey']}")  # 使用唯一的key
+                    
                     # 如果评论有变化，更新 session_state 和数据库
                     if comment != st.session_state.get(comment_key, ""):
                         st.session_state[comment_key] = comment
@@ -123,7 +123,6 @@ def display_images_with_comments(df, label, start_idx, end_idx):
 
                     if comment:
                         st.write(f"您的评论: {comment}")
-
 
 
 
@@ -135,7 +134,7 @@ def main():
         st.session_state['user_id'] = 'guest'  # 默认用户 ID 为 'guest'
 
     # 提供一个输入框让用户设置自己的 ID
-    user_input = st.text_input("请输入您的用户 ID", value=st.session_state['user_id'])
+    user_input = st.text_input("请输入您的用户 ID", value=st.session_state['user_id'], key="user_id_input")
     if user_input:
         st.session_state['user_id'] = user_input  # 更新用户 ID
 
