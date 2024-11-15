@@ -66,7 +66,7 @@ def load_image(url):
 def main():
     st.title('Puzzle—Image')
 
-    uploaded_file = r"C:\Users\v-jiqingsang\Desktop\Image_icon\Code\data\goldenset\golden_set_filter.tsv"
+    uploaded_file = "golden_set_filter.tsv"
     if uploaded_file is not None:
         df = load_data(uploaded_file)
         
