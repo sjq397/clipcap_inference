@@ -1,58 +1,104 @@
 import streamlit as st
 import pandas as pd
+import requests
+from PIL import Image
+from io import BytesIO
 
-# Load the TSV file
-@st.cache_data
-def load_data(file_path):
-    data = pd.read_csv(file_path, sep='\t', header=0).drop_duplicates()
-    data['Position'] = range(1, len(data) + 1)
+
+def load_data(file):
+    return pd.read_csv(file, sep='\t')
+
+def display_images_with_comments(df, label, start_idx, end_idx):
+    images_to_display = df[(df['Label'] == label)].iloc[start_idx:end_idx]
     
-    return data
+    num_images = len(images_to_display)
+    
 
-# Function to get images for selected titles
-def get_images_for_titles(data, selected_titles):
-    return data[data['MMAltTextWords'].isin(selected_titles)].sort_values(by='Position')
+    cols = st.columns(5)  
+    for i in range(0, num_images, 5):  
+        for j in range(5):
+            if i + j < num_images:
+                row = images_to_display.iloc[i + j]
+                col = cols[j]
+                with col:
 
-# Function to truncate text
-def truncate_text(text, max_length=30):
-    if len(text) > max_length:
-        return text[:max_length] + '...'
-    return text
+                    image = load_image(row['MUrl'])
+                    if image:
+                        st.image(image, caption=row['MUrl'], use_container_width=True)
+                    else:
 
-# Streamlit app
+                        st.write(f"Unable to load image: {row['MUrl']} , skip this image.")
+                    
+   
+                    key = row['Mkey']
+                    comment_key = f"comment_{key}"
+                    if comment_key not in st.session_state:
+                        st.session_state[comment_key] = ""  
+                    
+                    comment = st.text_input(f"comment (Mkey: {row['Mkey']}):", 
+                                            value=st.session_state[comment_key], 
+                                            key=f"input_{row['Mkey']}")
+                    
+                    if comment != st.session_state[comment_key]:
+                        st.session_state[comment_key] = comment
+
+                    if comment:
+                        st.write(f"comment: {comment}")
+
+
+def load_image(url):
+    try:
+        if url not in st.session_state:
+            response = requests.get(url)
+          
+            if response.status_code == 200:
+                img = Image.open(BytesIO(response.content))
+                st.session_state[url] = img  
+                return img
+            else:
+                st.warning(f"Unable to download picture, HTTP status code: {response.status_code} ({url})")
+                return None
+        return st.session_state[url]
+    except Exception as e:
+        st.warning(f" {e} ({url})")
+        return None
+
 def main():
-    st.title("Title-Based Image Picker")
+    st.title('Puzzle—Image')
 
-    # Load data
-    file_path = "infer_test_eval_data (1).tsv"
-    data = load_data(file_path)
-    print(data.columns)
+    uploaded_file = r"C:\Users\v-jiqingsang\Desktop\Image_icon\Code\data\goldenset\golden_set_filter.tsv"
+    if uploaded_file is not None:
+        df = load_data(uploaded_file)
+        
+        # 初始化page_num，如果没有存储在session_state中
+        if 'page_num' not in st.session_state:
+            st.session_state['page_num'] = 1
+        
+        label = st.selectbox('Label', ['1', '0', 'uncertain'])
 
-    # Get unique titles
-    titles = data['MMAltTextWords'].unique()
+        page_size = 20
+        page_num = st.session_state['page_num'] 
+        filtered_df = df[df['Label'] == label] 
+        total_pages = (len(filtered_df) // page_size) + (1 if len(filtered_df) % page_size > 0 else 0) 
+        start_idx = (page_num - 1) * page_size
+        end_idx = start_idx + page_size
 
-    # Multiselect titles
-    selected_titles = st.multiselect("Choose Titles", titles)
 
-    if selected_titles:
-        # Display selected titles
-        st.write(f"### Selected Titles")
+        st.write(f"Page {page_num} of {total_pages}")
 
-        # Get images for the selected titles
-        images = get_images_for_titles(data, selected_titles)
 
-        # Display images with truncated titles, 'Bmq', and 'Bmq_Infer'
-        cols = st.columns(5)
-        for i, row in images.iterrows():
-            with cols[(row['Position'] - 1) % 5]:
-                st.image(row['MUrl'], width=150, caption=truncate_text(row['MMAltTextWords']), use_column_width=True)
-                st.write(f"Title: {row['MMAltTextWords']}")
-                st.write(f"Bmq: {row['Bmq']}")
-                st.write(f"Bmq_Infer_v1: {row['Bmq_infer']}")
-                st.write(f"Bmq_Infer_title_jq: {row['Bmq_Predict_title_V2_jq']}")
-                st.write(f"Bmq_Infer_title_zt: {row['Bmq_Predict_title_V2_zt']}")
-                st.write(" ")
-                st.write(" ")
+        display_images_with_comments(df, label, start_idx, end_idx)
 
-if __name__ == "__main__":
+        if 0< page_num < total_pages:
+            if st.button('Next Page'):
+                st.session_state['page_num'] += 1 
+                st.rerun()  
+        if 1< page_num <= total_pages:
+            if st.button('Last Page'):
+                st.session_state['page_num'] -= 1 
+                st.rerun()  
+
+
+
+if __name__ == '__main__':
     main()
