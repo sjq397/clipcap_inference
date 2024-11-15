@@ -126,6 +126,8 @@ def display_images_with_comments(df, label, start_idx, end_idx):
 
 
 
+import time
+
 def main():
     st.title('Puzzle—Image')
 
@@ -158,7 +160,9 @@ def main():
         if 'page_num' not in st.session_state:
             st.session_state['page_num'] = 1
         
-        label = st.selectbox('Label', ['1', '0', 'uncertain'])
+        # 给每个 selectbox 元素添加唯一的 key
+        page_num_key = f"page_num_selectbox_{st.session_state['user_id']}_{timestamp}"  # 为页面选择框创建唯一 key
+        label = st.selectbox('Label', ['1', '0', 'uncertain'], key=page_num_key)
 
         page_size = 20
         page_num = st.session_state['page_num'] 
@@ -179,6 +183,7 @@ def main():
             if st.button('Last Page'):
                 st.session_state['page_num'] -= 1 
                 st.rerun()
+
 
 if __name__ == '__main__':
     main()
