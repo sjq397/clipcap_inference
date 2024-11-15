@@ -12,7 +12,7 @@ def init_db():
     c.execute('''
         CREATE TABLE IF NOT EXISTS comments (
             comment_id TEXT PRIMARY KEY,  -- 新增一个唯一的 comment_id
-            mkey TEXT,
+            MUrl TEXT,
             user_id TEXT,
             label TEXT,
             comment TEXT
@@ -23,25 +23,25 @@ def init_db():
 
 
 
-def generate_comment_id(user_id, mkey):
+def generate_comment_id(user_id, MUrl):
     # 使用时间戳或一个简单的序列号生成唯一的 comment_id
     timestamp = int(time.time() * 1000)  # 获取当前时间戳（毫秒级）
-    return f"{user_id}_{mkey}_{timestamp}"
+    return f"{user_id}_{MUrl}_{timestamp}"
 
 
 
-def save_comment(mkey, user_id, label, comment):
+def save_comment(MUrl, user_id, label, comment):
     try:
         # 生成一个唯一的 comment_id
-        comment_id = generate_comment_id(user_id, mkey)
+        comment_id = generate_comment_id(user_id, MUrl)
         
         conn = sqlite3.connect('comments.db')
         c = conn.cursor()
         # 保存评论时使用 comment_id 作为唯一标识符
         c.execute('''
-            INSERT INTO comments (comment_id, mkey, user_id, label, comment)
+            INSERT INTO comments (comment_id, MUrl, user_id, label, comment)
             VALUES (?, ?, ?, ?, ?)
-        ''', (comment_id, mkey, user_id, label, comment))
+        ''', (comment_id, MUrl, user_id, label, comment))
         conn.commit()
         conn.close()
     except Exception as e:
@@ -52,10 +52,10 @@ def save_comment(mkey, user_id, label, comment):
 
 
 
-def get_comments(mkey):
+def get_comments(MUrl):
     conn = sqlite3.connect('comments.db')
     c = conn.cursor()
-    c.execute('SELECT user_id, comment FROM comments WHERE mkey = ?', (mkey,))
+    c.execute('SELECT user_id, comment FROM comments WHERE MUrl = ?', (MUrl,))
     results = c.fetchall()  # 获取所有评论
     conn.close()
     return results  # 返回用户ID和评论内容的列表
@@ -83,7 +83,7 @@ def load_image(url):
         return None
 
 def display_images_with_comments(df, label, start_idx, end_idx):
-    images_to_display = df[(df['Label'] == label)].iloc[start_idx:end_idx]
+    images_to_display = df[(df['label'] == label)].iloc[start_idx:end_idx]
     
     num_images = len(images_to_display)
     cols = st.columns(5)  # 每行显示 5 张图片
@@ -101,7 +101,7 @@ def display_images_with_comments(df, label, start_idx, end_idx):
                     else:
                         st.write(f"：Images cannot be loaded: {row['MUrl']}")
                     
-                    key = row['Mkey']
+                    key = row['MUrl']
                     comment_key = f"comment_{key}"
                     # 从数据库读取所有评论
                     current_comments = get_comments(key)
@@ -112,9 +112,9 @@ def display_images_with_comments(df, label, start_idx, end_idx):
                     
                     # 获取当前用户输入的评论
                     user_id = st.session_state.get('user_id', 'guest')  # 获取用户ID，默认是 'guest'
-                    comment = st.text_input(f"Add Comments (Mkey: {row['Mkey']}):", 
+                    comment = st.text_input(f"Add Comments (MUrl: {row['MUrl']}):", 
                                             value=st.session_state.get(comment_key, ""), 
-                                            key=f"input_{row['Mkey']}")  # 使用唯一的key
+                                            key=f"input_{row['MUrl']}")  # 使用唯一的key
                     
                     # 如果评论有变化，更新 session_state 和数据库
                     if comment != st.session_state.get(comment_key, ""):
@@ -144,7 +144,7 @@ def main():
     if user_input:
         st.session_state['user_id'] = user_input  # 更新用户 ID
 
-    uploaded_file = "golden_set_filter.tsv"
+    uploaded_file = "icongoldenset.tsv"
     if uploaded_file is not None:
         df = load_data(uploaded_file)
         
@@ -154,11 +154,11 @@ def main():
         if 'page_num' not in st.session_state:
             st.session_state['page_num'] = 1
         
-        label = st.selectbox('Label(1-Puzzle; 0-Normal)', ['1', '0', 'uncertain'])
+        label = st.selectbox('label(1-Puzzle; 0-Normal)', ['1', '0', 'uncertain'])
 
         page_size = 40
         page_num = st.session_state['page_num'] 
-        filtered_df = df[df['Label'] == label] 
+        filtered_df = df[df['label'] == label] 
         total_pages = (len(filtered_df) // page_size) + (1 if len(filtered_df) % page_size > 0 else 0) 
         start_idx = (page_num - 1) * page_size
         end_idx = start_idx + page_size
