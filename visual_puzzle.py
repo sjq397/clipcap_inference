@@ -133,11 +133,15 @@ def main():
     if 'user_id' not in st.session_state:
         st.session_state['user_id'] = 'guest'  # 默认用户 ID 为 'guest'
 
-    # 提供一个输入框让用户设置自己的 ID，使用会话状态中的 user_id 来存储
+    # 使用当前时间（到秒）生成唯一的输入框 key
+    timestamp = int(time.time())  # 获取当前时间戳（到秒）
+    user_id_key = f"user_id_input_{st.session_state['user_id']}_{timestamp}"  # 时间戳后缀确保唯一
+
+    # 提供一个输入框让用户设置自己的 ID
     user_input = st.text_input(
         "请输入您的用户 ID", 
-        value=st.session_state['user_id'],  # 通过 session_state 保持输入值
-        key="user_id_input"  # 固定 key
+        value=st.session_state['user_id'],  # 使用会话状态中的值
+        key=user_id_key  # 为每个输入框生成唯一的 key
     )
     
     # 更新会话状态中的用户 ID
@@ -175,7 +179,6 @@ def main():
             if st.button('Last Page'):
                 st.session_state['page_num'] -= 1 
                 st.rerun()
-
 
 if __name__ == '__main__':
     main()
