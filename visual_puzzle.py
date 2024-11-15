@@ -26,13 +26,14 @@ def init_db():
 def save_comment(mkey, user_id, label, comment):
     conn = sqlite3.connect('comments.db')
     c = conn.cursor()
-    # 检查是否已存在此评论，若存在则更新，否则插入新评论
+    # 不使用 INSERT OR REPLACE，而是使用 INSERT 来确保每个评论都被存储
     c.execute('''
-        INSERT OR REPLACE INTO comments (mkey, user_id, label, comment)
+        INSERT INTO comments (mkey, user_id, label, comment)
         VALUES (?, ?, ?, ?)
     ''', (mkey, user_id, label, comment))
     conn.commit()
     conn.close()
+
 
 # 从数据库读取所有评论
 def get_comments(mkey):
@@ -84,7 +85,7 @@ def display_images_with_comments(df, label, start_idx, end_idx):
                     if image:
                         st.image(image, caption=row['MUrl'], use_container_width=True)
                     else:
-                        st.write(f"Unable to load image: {row['MUrl']} , skip this image.")
+                        st.write(f"无法加载图片: {row['MUrl']} , 跳过此图片。")
                     
                     key = row['Mkey']
                     comment_key = f"comment_{key}"
@@ -101,7 +102,7 @@ def display_images_with_comments(df, label, start_idx, end_idx):
                     
                     # 获取当前用户输入的评论
                     user_id = st.session_state.get('user_id', 'guest')  # 获取用户ID，默认是 'guest'
-                    comment = st.text_input(f"Add a comment (Mkey: {row['Mkey']}):", 
+                    comment = st.text_input(f"添加评论 (Mkey: {row['Mkey']}):", 
                                             value=st.session_state[comment_key], 
                                             key=f"input_{row['Mkey']}")
 
@@ -111,7 +112,7 @@ def display_images_with_comments(df, label, start_idx, end_idx):
                         save_comment(key, user_id, label, comment)  # 将评论保存到数据库
 
                     if comment:
-                        st.write(f"Your comment: {comment}")
+                        st.write(f"您的评论: {comment}")
 
 
 
