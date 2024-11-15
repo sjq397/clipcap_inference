@@ -41,6 +41,29 @@ def get_comment(mkey):
     conn.close()
     return result[0] if result else ""
 
+
+def load_data(file):
+    return pd.read_csv(file, sep='\t')
+
+def load_image(url):
+    try:
+        if url not in st.session_state:
+            response = requests.get(url)
+          
+            if response.status_code == 200:
+                img = Image.open(BytesIO(response.content))
+                st.session_state[url] = img  
+                return img
+            else:
+                st.warning(f"Unable to download picture, HTTP status code: {response.status_code} ({url})")
+                return None
+        return st.session_state[url]
+    except Exception as e:
+        st.warning(f" {e} ({url})")
+        return None
+
+
+
 # Streamlit 显示图像和评论的函数
 def display_images_with_comments(df, label, start_idx, end_idx):
     images_to_display = df[(df['Label'] == label)].iloc[start_idx:end_idx]
@@ -83,24 +106,6 @@ def display_images_with_comments(df, label, start_idx, end_idx):
                     if comment:
                         st.write(f"comment: {comment}")
 
-
-
-def load_data(url):
-    try:
-        if url not in st.session_state:
-            response = requests.get(url)
-          
-            if response.status_code == 200:
-                img = Image.open(BytesIO(response.content))
-                st.session_state[url] = img  
-                return img
-            else:
-                st.warning(f"Unable to download picture, HTTP status code: {response.status_code} ({url})")
-                return None
-        return st.session_state[url]
-    except Exception as e:
-        st.warning(f" {e} ({url})")
-        return None
 
 def main():
     st.title('Puzzle—Image')
