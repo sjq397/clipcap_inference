@@ -99,7 +99,7 @@ def display_images_with_comments(df, label, start_idx, end_idx):
                     if image:
                         st.image(image, caption=row['MUrl'], use_container_width=True)
                     else:
-                        st.write(f"：Images cannot be loaded: {row['MUrl']} , 跳过此图片。")
+                        st.write(f"：Images cannot be loaded: {row['MUrl']}")
                     
                     key = row['Mkey']
                     comment_key = f"comment_{key}"
@@ -154,7 +154,7 @@ def main():
         if 'page_num' not in st.session_state:
             st.session_state['page_num'] = 1
         
-        label = st.selectbox('Label(1-Puzzle; 0-Normal', ['1', '0', 'uncertain'])
+        label = st.selectbox('Label(1-Puzzle; 0-Normal)', ['1', '0', 'uncertain'])
 
         page_size = 40
         page_num = st.session_state['page_num'] 
