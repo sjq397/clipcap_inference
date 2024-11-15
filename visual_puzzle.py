@@ -105,7 +105,7 @@ def display_images_with_comments(df, label, start_idx, end_idx):
                     comment_key = f"comment_{key}_{st.session_state['user_id']}_{int(time.time())}"  # 唯一 key
                     
                     # 从数据库读取已有评论
-                    current_comment = get_comment(key)
+                    current_comment = get_comments(key)
                     
                     # 在 session_state 中保存评论状态
                     if comment_key not in st.session_state:
