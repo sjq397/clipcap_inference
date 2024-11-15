@@ -82,7 +82,6 @@ def load_image(url):
         st.warning(f" {e} ({url})")
         return None
 
-
 def display_images_with_comments(df, label, start_idx, end_idx):
     images_to_display = df[(df['Label'] == label)].iloc[start_idx:end_idx]
     
@@ -127,13 +126,19 @@ def display_images_with_comments(df, label, start_idx, end_idx):
 
 
 
+
 def main():
     st.title('Puzzle—Image')
 
-    # Assign a user_id, either from session or ask the user to input one
+    # 确保在会话状态中检查并设置用户 ID
     if 'user_id' not in st.session_state:
-        st.session_state['user_id'] = st.text_input("Enter your username:", "guest")
-    
+        st.session_state['user_id'] = 'guest'  # 默认用户 ID 为 'guest'
+
+    # 提供一个输入框让用户设置自己的 ID
+    user_input = st.text_input("请输入您的用户 ID", value=st.session_state['user_id'])
+    if user_input:
+        st.session_state['user_id'] = user_input  # 更新用户 ID
+
     uploaded_file = "golden_set_filter.tsv"
     if uploaded_file is not None:
         df = load_data(uploaded_file)
@@ -165,6 +170,7 @@ def main():
             if st.button('Last Page'):
                 st.session_state['page_num'] -= 1 
                 st.rerun()
+
 
 if __name__ == '__main__':
     main()
