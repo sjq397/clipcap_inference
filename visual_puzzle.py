@@ -156,7 +156,7 @@ def main():
         
         label = st.selectbox('Label', ['1', '0', 'uncertain'])
 
-        page_size = 20
+        page_size = 40
         page_num = st.session_state['page_num'] 
         filtered_df = df[df['Label'] == label] 
         total_pages = (len(filtered_df) // page_size) + (1 if len(filtered_df) % page_size > 0 else 0) 
