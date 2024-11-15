@@ -4,45 +4,62 @@ import requests
 from PIL import Image
 from io import BytesIO
 import sqlite3
+import time  # 用于生成时间戳
 
 def init_db():
     conn = sqlite3.connect('comments.db')  # 创建数据库文件
     c = conn.cursor()
-    # 创建一个表格用于存储评论，增加 user_id 列来区分不同用户的评论
     c.execute('''
         CREATE TABLE IF NOT EXISTS comments (
+            comment_id TEXT PRIMARY KEY,  -- 新增一个唯一的 comment_id
             mkey TEXT,
             user_id TEXT,
             label TEXT,
-            comment TEXT,
-            PRIMARY KEY (mkey, user_id)  -- 主键由 mkey 和 user_id 组成，确保每个用户对每个 mkey 的评论唯一
+            comment TEXT
         )
     ''')
     conn.commit()
     conn.close()
 
 
-# 存储评论到数据库
+
+def generate_comment_id(user_id, mkey):
+    # 使用时间戳或一个简单的序列号生成唯一的 comment_id
+    timestamp = int(time.time() * 1000)  # 获取当前时间戳（毫秒级）
+    return f"{user_id}_{mkey}_{timestamp}"
+
+
+
 def save_comment(mkey, user_id, label, comment):
-    conn = sqlite3.connect('comments.db')
-    c = conn.cursor()
-    # 不使用 INSERT OR REPLACE，而是使用 INSERT 来确保每个评论都被存储
-    c.execute('''
-        INSERT INTO comments (mkey, user_id, label, comment)
-        VALUES (?, ?, ?, ?)
-    ''', (mkey, user_id, label, comment))
-    conn.commit()
-    conn.close()
+    try:
+        # 生成一个唯一的 comment_id
+        comment_id = generate_comment_id(user_id, mkey)
+        
+        conn = sqlite3.connect('comments.db')
+        c = conn.cursor()
+        # 保存评论时使用 comment_id 作为唯一标识符
+        c.execute('''
+            INSERT INTO comments (comment_id, mkey, user_id, label, comment)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (comment_id, mkey, user_id, label, comment))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        st.error(f"保存评论时出现错误: {e}")
+        print(f"Error in save_comment: {e}")
 
 
-# 从数据库读取所有评论
+
+
+
 def get_comments(mkey):
     conn = sqlite3.connect('comments.db')
     c = conn.cursor()
     c.execute('SELECT user_id, comment FROM comments WHERE mkey = ?', (mkey,))
-    results = c.fetchall()
+    results = c.fetchall()  # 获取所有评论
     conn.close()
-    return results  # 返回一个包含用户ID和评论内容的列表
+    return results  # 返回用户ID和评论内容的列表
+
 
 
 def load_data(file):
@@ -66,8 +83,6 @@ def load_image(url):
         return None
 
 
-
-# Streamlit 显示图像和评论的函数
 def display_images_with_comments(df, label, start_idx, end_idx):
     images_to_display = df[(df['Label'] == label)].iloc[start_idx:end_idx]
     
@@ -92,10 +107,6 @@ def display_images_with_comments(df, label, start_idx, end_idx):
                     # 从数据库读取所有评论
                     current_comments = get_comments(key)
                     
-                    # 在 session_state 中保存评论状态
-                    if comment_key not in st.session_state:
-                        st.session_state[comment_key] = ""
-                    
                     # 显示所有评论
                     for user_id, comment in current_comments:
                         st.write(f"{user_id}: {comment}")
@@ -103,11 +114,11 @@ def display_images_with_comments(df, label, start_idx, end_idx):
                     # 获取当前用户输入的评论
                     user_id = st.session_state.get('user_id', 'guest')  # 获取用户ID，默认是 'guest'
                     comment = st.text_input(f"添加评论 (Mkey: {row['Mkey']}):", 
-                                            value=st.session_state[comment_key], 
+                                            value=st.session_state.get(comment_key, ""), 
                                             key=f"input_{row['Mkey']}")
 
                     # 如果评论有变化，更新 session_state 和数据库
-                    if comment != st.session_state[comment_key]:
+                    if comment != st.session_state.get(comment_key, ""):
                         st.session_state[comment_key] = comment
                         save_comment(key, user_id, label, comment)  # 将评论保存到数据库
 
