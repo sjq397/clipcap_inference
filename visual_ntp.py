@@ -5,7 +5,7 @@ from PIL import Image
 from io import BytesIO
 
 # 数据文件路径
-data_file = "Index_infer_sample.tsv"
+data_file = "visual_Index_infer_sample_1210.tsv"
 
 # 读取数据
 @st.cache_data
