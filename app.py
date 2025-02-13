@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 
 # 读取 TSV 文件
-file_path = r"C:\Users\v-jiqingsang\Desktop\Prompt_Topic\result_Entity.tsv"
+file_path = "result_Entity.tsv"
 df = pd.read_csv(file_path, sep='\t')
 
 # 显示筛选选项
@@ -42,4 +42,3 @@ for idx, row in filtered_df.iloc[start_idx:end_idx].iterrows():
 # 运行 Streamlit 应用
 if __name__ == "__main__":
     st.title("Result Entity Visualization")
-    st.write("根据筛选条件显示图片和对应信息")
