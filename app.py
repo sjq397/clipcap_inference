@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 
 # 读取 TSV 文件
-file_path = "result_Entity.tsv"
+file_path = "./result_Entity.tsv"
 df = pd.read_csv(file_path, sep='\t')
 
 # 显示筛选选项
