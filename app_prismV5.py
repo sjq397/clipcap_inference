@@ -13,16 +13,16 @@ if uploaded_file:
     df = pd.read_csv(uploaded_file, sep='\t')
     
     # 检查必要列是否存在
-    if 'ImageKey' not in df.columns or 'PrismyV5Color' not in df.columns:
-        st.error("TSV 文件缺少必要的列: ImageKey 或 PrismyV5Color")
+    if 'ImageKey' not in df.columns or 'predicted_label' not in df.columns:
+        st.error("TSV 文件缺少必要的列: ImageKey 或 predicted_label	")
     else:
         # 获取所有唯一标签
-        unique_labels = df['PrismyV5Color'].unique()
+        unique_labels = df['predicted_label'].unique()
         
         # 对每个标签随机采样200条数据
         sampled_dfs = []
         for label in unique_labels:
-            label_df = df[df['PrismyV5Color'] == label]
+            label_df = df[df['predicted_label'] == label]
             sample_size = min(200, len(label_df))
             sampled_label_df = label_df.sample(n=sample_size, random_state=42)
             sampled_dfs.append(sampled_label_df)
@@ -34,7 +34,7 @@ if uploaded_file:
         selected_label = st.selectbox("选择一个标签查看对应图片:", unique_labels)
         
         # 筛选对应标签的图片
-        filtered_df = sampled_df[sampled_df['PrismyV5Color'] == selected_label]
+        filtered_df = sampled_df[sampled_df['predicted_label'] == selected_label]
         
         st.write(f"共找到 {len(filtered_df)} 张图片")
         
@@ -42,5 +42,5 @@ if uploaded_file:
         cols = st.columns(3)  # 三列布局
         for i, (_, row) in enumerate(filtered_df.iterrows()):
             with cols[i % 3]:
-                st.image(row['ImageKey'], caption=row['PrismyV5Color'], use_column_width=True)
+                st.image(row['ImageKey'], caption=row['predicted_label'], use_column_width=True)
                 st.markdown(f"[查看图片]({row['ImageKey']})")
